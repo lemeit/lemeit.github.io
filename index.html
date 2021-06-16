@@ -181,6 +181,162 @@ Calcular el ACH  <br>
 
     <hr>
 
+
+<h1> Probabilidad de Infección: Modelo de Wells-Riley </h1>
+
+    <br> Es deseable poder estimar una probabilidad de infección dada la presencia de al menos un infectado en una sala. De hecho, 
+    no es suficiente conocer el exceso de CO2, ni el ACH de un interior para determinarla cuantitativamente, ya que además de
+    no incluir el tiempo de ocupación, no incluye información concreta sobre la enfermedad. El modelo de Wells-Riley es muy modelo simple 
+    y posiblemente muy impreciso que sin embargo muestra claramente la dependencia entre las variables mas relevantes. La
+    calculadora está basada en aplicar el modelo con datos específicos de COVID19 como está descripto en el apéndice 1 de
+    <a href="https://www.rehva.eu/fileadmin/user_upload/REHVA_COVID-19_guidance_document_V4_09122020.pdf">
+ [3]
+</a>
+</p>
+<br><br>
+
+<p>
+    En síntesis se define un "cuanto" de virus a la dosis requerida para provocar infección en 63% de las personas susceptibles, de 
+    modo que p=1-exp(-n) sea la probabilidad de infección de un ocupante que inhalo n cuantos. En base a este número se definen
+    los siguientes parámetros:
+    <br><br> E [cuanta/h] = tasa de emisión de "cuantos" de un infectado en la sala (ver mas abajo "Quanta emission rate") <br> 
+    V [m^3] = el volumen de la sala <br> 
+    ACH [1/h] = los cambios de aire por hora de la sala <br> 
+    Qb [ m^3/h ] = tasa de respiración volumétrica de un ocupante de la sala (ver mas abajo "Breathing rate")  <br> 
+    D [h] = tiempo de ocupación del ocupante <br><br>
+    
+    El siguiente cálculo presupone un infectado y no tiene en cuenta el efecto de los barbijos, ni de filtros de aerosoles. 
+    Es por lo tanto una sobreestimación de la probabilidad de contagio, pero con las dependencias esperadas con los distintos parámetros. 
+</p>
+<br>
+<br>
+
+<form>
+    <p><label>* E [cuanta/h]</label>
+        <input type="text" id="E" value="3.1"></p>
+
+    <p><label>V [m^3]</label>
+        <input type="text" id="V" value="300"></p>
+
+    <p><label>ACH [1/h]</label>
+        <input type="text" id="ACH" value="7"></p>
+
+    <p><label>* Qb [ m^3/h ]</label>
+        <input type="text" id="Qb" value="0.5">
+
+        <p><label>D [h]</label>
+            <input type="text" id="D" value="1"></p>
+</form>
+
+<br>
+
+<button onclick="myFunction()"> 
+Calcular la probabilidad de Infección con el modelo de Wells-Riley <br>
+</button><br>
+
+<p style="color:blue" id="demo1" text="hola"></p>
+
+<p style="color:blue" id="demo2" text="hola"></p>
+
+<p style="color:blue" id="demo3" text="hola"></p>
+
+
+<h3> * Tablas para estimar la tasa de exhalación de virus E de una persona infectada y la tasa volumétrica de inhalación Qb de un susceptible</h3>
+<img src="https://droyktton.github.io/loscoihues/ventilacion/E_y_Qb.png" width="500" height="350" alt="esquema">
+
+<br>
+<br>
+
+
+
+<script>
+    function myFunction() {
+
+        var E = document.getElementById("E").value;
+        var Qb = document.getElementById("Qb").value;
+        var V = document.getElementById("V").value;
+        var D = document.getElementById("D").value;
+        var Lambda = document.getElementById("ACH").value;
+
+
+        /////////////////////////////////
+        // este es el modelo
+
+        // Concentracion promedio
+        var Cavg = (E / (Lambda * V)) * (1.0 - (1.0 - Math.exp(-Lambda * D)) / (Lambda * D));
+
+        // cuantos promedio
+        var n = Qb * D * Cavg;
+
+        // probabilidad de infeccion
+        var p = (1 - Math.exp(-n));
+
+        /////////////////////////////////
+
+        var texton = "<i>n = " + n;
+        document.getElementById("demo1").innerHTML = texton
+
+
+        var textop = "<i>probabilidad de infeccion = " + p;
+        document.getElementById("demo2").innerHTML = textop
+
+        var textoc = "<i>es decir, en aproximadamente 1 de cada " + Math.trunc(1.0 / p) + " realizaciones</i>";
+        document.getElementById("demo3").innerHTML = textoc
+
+
+    }
+
+
+    function myFunction2() {
+
+        var ACH = document.getElementById("ACH").value;
+        var Cext = document.getElementById("Cext").value;
+        var V = document.getElementById("V").value;
+        var Np = document.getElementById("Np").value;
+        var GCO2 = document.getElementById("GCO2").value;
+
+        /////////////////////////////////
+        // este es el modelo
+
+        var Cint = (GCO2 * Np + 17 * ACH * V * Cext * 0.000001) / (ACH * V * 17 * 0.000001)
+
+
+        /////////////////////////////////
+
+        var texton = "<i>el CO2 interior es ~ " + Math.trunc(Cint) + " ppm";
+        document.getElementById("demo4").innerHTML = texton
+    }
+
+
+
+    function myFunction3() {
+
+        var Cint = document.getElementById("Cint2").value;
+        var Cext = document.getElementById("Cext2").value;
+        var V = document.getElementById("V2").value;
+        var Np = document.getElementById("Np2").value;
+        var GCO2 = document.getElementById("GCO22").value;
+
+        /////////////////////////////////
+        // este es el modelo
+
+        var ACH = 58823.5 * GCO2 * Np / ((Cint - Cext) * V)
+
+        /////////////////////////////////
+
+        var texton = "<i>el ACH es ~ " + Math.trunc(ACH * 100) * 0.01 + " cambios por hora</i>";
+        document.getElementById("demo5").innerHTML = texton
+    }
+</script>
+
+
+
+
+</body>
+
+</html>
+
+
 <p> Basado en el desarrollo de <a href="https://twitter.com/droyktton">@droytton</a> </p>
 <br>
 <br>
